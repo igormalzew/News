@@ -1,0 +1,679 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Новости</title>
+
+    <link href="libs/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="libs/css/daterangepicker.css" rel="stylesheet" />
+    <link href="libs/css/angular-ui-toggle.css" rel="stylesheet" />
+    <link href="libs/css/fancyScrollbar.css" rel="stylesheet" />
+    <link href="libs/css/summernote.css" rel="stylesheet" />
+    <link href="libs/css/robotoGoogleFont.css" rel="stylesheet" />
+    <link href="libs/css/font-awesome.min.css" rel="stylesheet" />
+
+
+    <link href="css/News.css" rel="stylesheet" />
+
+
+    <script src="libs/js/jquery.min.js"></script>
+    <script src="libs/js/bootstrap.min.js"></script>
+    <script src="libs/js/moment-with-locales.js"></script>
+    <script src="libs/js/angular.min-1.6.4.js"></script>
+    <script src="libs/js/ui-bootstrap-tpls-1.3.0.min.js"></script>
+    <script src="libs/js/angular-locale_ru-ru.js"></script>
+    <script src="libs/js/daterangepicker.js"></script>
+    <script src="libs/js/fancyScrollbar.js"></script>
+    <script src="libs/js/summernote.min.js"></script>
+    <script src="libs/js/angular-summernote.js"></script>
+
+    <script src="js/NewNewsApp.js"></script>
+    <script src="js/MainNewNewsController.js"></script>
+    <script src="js/NewsDetailController.js"></script>
+    <script src="js/EditNewsController.js"></script>
+    <script src="js/DisplayNewsListController.js"></script>
+    <script src="js/EmailSettingController.js"></script>
+    <script src="js/DateRangePickerInit.js"></script>
+
+</head>
+<body>
+
+    <div ng-app="NewNewsApp">
+        <div class="clearfix"></div>
+        <div id="MainNewNewsController" ng-controller="MainNewNewsController">
+            <div class="main-loader" ng-hide="mainReady">
+                <div class="loading-indicator"></div>
+            </div>
+            <div ng-show="mainReady" ng-init="MainControllers.IsVendor = true" class="main-container ng-hide">
+
+                <div class="pt-page"
+                     id="DisplayNewsListController"
+                     ng-controller="DisplayNewsListController"
+                     ng-class="MainControllers.DisplayNewsListCtrl.classList.value">
+
+
+                    <div class="display-news-page">
+                        <div class="display-news">
+
+                            <div class="display-news-content">
+
+                                <div id="sideBarFilter" class="side-bar-filter">
+
+                                    <div ng-show="SideBarFilter.newsTag.items.length > 0" ng-init="SideBarFilter.newsTag.init()" class="block-padding">
+                                        <div class="module module-bottom-padding">
+
+                                            <div class="module-header-padding">
+                                                <div class="bottom-border-gray module-header-margin">
+                                                    <span class="module_header">Категории</span>
+                                                </div>
+                                            </div>
+
+                                            <div ng-repeat="tag in SideBarFilter.newsTag.items track by $index" ng-click="tag.click()" class="module-padding cursor item">
+                                                <div class="item-check {{tag.isSelected ? 'item-check-selected' : 'item-check-not-selected'}}"></div>
+                                                <div class="item-padding {{tag !== SideBarFilter.newsTag.items[SideBarFilter.newsTag.items.length - 1] ? 'bottom-border-light' : ''}}">
+                                                    <span>{{tag.tagName}}</span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div ng-show="SideBarFilter.targetGroup.items.length > 0" ng-init="SideBarFilter.targetGroup.init()" class="block-padding">
+                                        <div class="module module-bottom-padding">
+
+                                            <div class="module-header-padding">
+                                                <div class="bottom-border-gray module-header-margin">
+                                                    <span class="module_header">Целевая группа</span>
+                                                </div>
+                                            </div>
+
+                                            <div ng-click="SideBarFilter.targetGroup.click(0)" class="module-padding cursor item">
+                                                <div class="item-check {{SideBarFilter.targetGroup.selectedGroupId == 0 ? 'item-radio-selected' : 'item-radio-not-selected'}}"></div>
+                                                <div class="item-padding bottom-border-light">
+                                                    <span>Всем</span>
+                                                </div>
+                                            </div>
+
+                                            <div ng-repeat="group in SideBarFilter.targetGroup.items track by $index" ng-click="SideBarFilter.targetGroup.click(group.groupId)" class="module-padding cursor item">
+                                                <div class="item-check {{group.groupId == SideBarFilter.targetGroup.selectedGroupId ? 'item-radio-selected' : 'item-radio-not-selected'}}"></div>
+                                                <div class="item-padding {{group !== SideBarFilter.targetGroup.items[SideBarFilter.targetGroup.items.length - 1] ? 'bottom-border-light' : ''}}">
+                                                    <span>{{group.groupName}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="block-padding">
+                                        <div class="module module-bottom-padding">
+
+                                            <div class="module-header-padding">
+                                                <div class="bottom-border-gray module-header-margin">
+                                                    <span class="module_header">Дата публикации</span>
+                                                </div>
+                                            </div>
+
+                                            <div style="padding: 0px 20px 40px 20px" class="cursor">
+                                                <input style="height: 40px; text-align: center; border-radius: 2px" type="text" id="DateOfPublication" name="DateOfPublication" maxlength="12" ng-model="SideBarFilter.dateOfPublication.value" class="input-filter form-control" />
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                                <div ng-init="MainControllers.NewsDetailCtrl.SelectedNew = News.create(FakeServer.getOneNew()); MainControllers.setActive();" class="news-main-area">
+
+                                    <div class="main-area-search">
+
+                                        <div class="search-input-module">
+                                            <div class="search-loaders">
+                                                <i class="news-search-icon"
+                                                   ng-show="!Search.isLoading && Search.value == ''"
+                                                   ng-click="News.getNews()"
+                                                   uib-tooltip="Поиск" tooltip-placement="top-right" tooltip-append-to-body="true"></i>
+
+                                                <i ng-show="Search.isLoading" class="news-loader"></i>
+
+                                                <i ng-show="!Search.isLoading && Search.value != ''"
+                                                   ng-click="Search.value = ''; News.getNews()"
+                                                   uib-tooltip="Очистить" tooltip-placement="top-right" tooltip-append-to-body="true"
+                                                   class="fa fa-times search-icon cursor" aria-hidden="true">
+                                                </i>
+                                            </div>
+
+                                            <input ng-change="Search.doSearchWithTimeOut()" class="news-search" placeholder="Поиск..." ng-model="Search.value" type="text">
+                                        </div>
+
+                                        <div class="search-btns">
+                                            <i ng-show="MainControllers.IsVendor"
+                                               ng-click="News.goToEditNews()"
+                                               class="add-news-icon" uib-tooltip="Добавить новость" tooltip-placement="top-right" tooltip-append-to-body="true" aria-hidden="true"></i>
+
+
+                                            <i ng-click="MainControllers.setActive(MainControllers.EmailSettingCtrl.name)"
+                                               class="config-btn-icon" uib-tooltip="Настройка получения новостей" tooltip-placement="top-right" tooltip-append-to-body="true" aria-hidden="true"></i>
+
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-xs-12 without-padding">
+
+                                        <ul id="newsScroll" style="margin-bottom: 0" ng-show="News.items.length > 0" class="scrollY without-padding">
+                                            <div id="newsScrollViewport" class="viewport">
+                                                <div class="content">
+
+                                                    <div ng-repeat="item in News.items track by $index"
+                                                         class="padding-news-block">
+
+                                                        <div href="?id={{item.id}}"
+                                                             ng-click="News.goToNewsDetail(item)"
+                                                             class="col-xs-12 without-padding news-block cursor {{item.isImportant ? 'important-new' : ''}} {{item.isSelectWithColor ? 'selected-with-color-new' : ''}}">
+
+                                                            <div init-image ng-model="item.image.value" class="col-xs-12 without-padding news-img">
+                                                                <div class="news-time">
+                                                                    <span>{{item.creationTime.month}}</span>
+                                                                    <span>{{item.creationTime.year}}</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <i ng-show="MainControllers.IsVendor" ng-click="News.goToEditNews(item, true); $event.stopPropagation();" class="fa fa-pencil circle-edit" aria-hidden="true"></i>
+                                                            <i ng-show="MainControllers.IsVendor" ng-click="News.deleteNewsQuestion(item); $event.stopPropagation();" class="fa fa-times circle-close" aria-hidden="true"></i>
+
+                                                            <div class="col-xs-12 post-content">
+
+                                                                <div style="max-height: 3.5em; overflow: hidden" class="col-xs-12 without-padding">
+                                                                    <h3 class="title">{{item.topic}}</h3>
+                                                                </div>
+
+                                                                <div class="post-meta">
+                                                                    <div class="post-meta-tags">
+                                                                        <div class="col-xs-12 without-padding footer-text-tags">
+                                                                            <span popover-trigger="mouseenter"
+                                                                                  class="tag-count"
+                                                                                  uib-popover-template="'categoryDetail.html'"
+                                                                                  popover-placement="right"
+                                                                                  popover-append-to-body="true">{{item.displayedTags.length}}</span>
+                                                                            <span class="footer-text-displayed-tag">{{item.displayedTags[0].TagName}}</span>
+                                                                        </div>
+
+                                                                    </div>
+                                                                    <div class="post-meta-like">
+                                                                        <div style="margin-left: 0" class="footer-text-like">
+                                                                            <div class="{{item.isLiked == true ? 'news-like-icon-selected' : 'news-like-icon-not-selected'}}"></div> <div>{{item.likeCount}}</div>
+                                                                        </div>
+                                                                        <div class="footer-text-like">
+                                                                            <div class="news-watch-icon"></div> <div>{{item.browseCount}}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </ul>
+                                    </div>
+
+                                    <div style="margin-top: 70px;" ng-show="News.items.length == 0" class="col-xs-12 without-padding text-center">
+                                        <i style="font-size:4em; color: rgba(100, 100, 100, 0.7)" class="fa fa-newspaper-o col-xs-12 text-center" aria-hidden="true"></i>
+                                        <span class="not_found">Новостей не найдено</span>
+                                    </div>
+
+
+                                    <script type="text/ng-template" id="categoryDetail.html">
+                                        <div class="col-xs-12 without-padding popover-text">
+                                            <div ng-repeat="tag in item.displayedTags track by $index" class="col-xs-6 without-padding">
+                                                <i class="fa fa-circle dot-cat" aria-hidden="true"></i> <span>{{tag.TagName}}</span>
+                                            </div>
+                                        </div>
+                                    </script>
+
+
+                                </div>
+
+
+                            </div>
+
+                            <div ng-show="MainControllers.DisplayNewsListCtrl.isNewsDeleteProcessing" class="news-delete-dialog">
+                                <div class="delete-dialog-message">
+                                    <h4 style="font-size: 16px; text-align: center;">Внимание! Новость будет безвозратно удалена. <br /> Продолжить?</h4>
+                                    <a class="btn delete-news-button" ng-click="News.deleteNews();">Да</a>
+                                    <a class="btn delete-news-button" ng-click="MainControllers.DisplayNewsListCtrl.isNewsDeleteProcessing = false;">Нет</a>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-page"
+                     id="NewsDetailController"
+                     ng-controller="NewsDetailController"
+                     ng-class="MainControllers.NewsDetailCtrl.classList.value">
+
+                    <div id="newsDetailView" class="news-detail-page">
+
+                        <div class="news-detail-content">
+
+                            <div init-image ng-model="MainControllers.NewsDetailCtrl.SelectedNew.image.value"
+                                 class="col-xs-12 without-padding news-detail-img">
+                                <div class="news-detail-time">
+                                    <span>{{MainControllers.NewsDetailCtrl.SelectedNew.creationTime.month}}</span>
+                                    <span>{{MainControllers.NewsDetailCtrl.SelectedNew.creationTime.year}}</span>
+                                </div>
+                            </div>
+
+ 
+                            <div class="news-detail-header-container">
+                                <h2 class="news-detail-header">{{MainControllers.NewsDetailCtrl.SelectedNew.topic}}</h2>
+                            </div>
+
+                            <div class="news-detail-newscontent">
+                                <div id="newsHtmlContent" class="col-xs-12 ql-editor without-padding">
+
+                                </div>
+                            </div>
+
+
+                            <div class="news-detail-footer">
+                                <div class="col-xs-12 additional-panel">
+
+                                    <div class="additional-panel-tags">
+                                        <span style="margin-right: 10px" ng-repeat="tag in MainControllers.NewsDetailCtrl.SelectedNew.displayedTags track by $index">{{tag.TagName}}</span>
+                                    </div>
+
+
+                                    <div class="additional-panel-like-review">
+
+                                        <div ng-click="DetailNews.setLike()" class="like">
+                                            <div class="{{MainControllers.NewsDetailCtrl.SelectedNew.isLiked == true ? 'news-like-icon-selected' : 'news-like-icon-not-selected'}}"></div>
+                                            <div>{{MainControllers.NewsDetailCtrl.SelectedNew.likeCount}}</div>
+                                        </div>
+                                        <div class="review">
+                                            <div class="news-watch-icon"></div> <div>{{MainControllers.NewsDetailCtrl.SelectedNew.browseCount}}</div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div ng-show="MainControllers.NewsDetailCtrl.SelectedNew.files.length" class="news-detail-attach">
+                                <div class="news-detail-attach-header">
+                                    <div class="bottom-border-light">
+                                        <span class="module_header without-padding">Приложения</span>
+                                    </div>
+                                </div>
+
+                                <div ng-repeat="file in MainControllers.NewsDetailCtrl.SelectedNew.files track by $index"
+                                     ng-click="DetailNews.getNewsFile(file.id)" class="news-detail-attach-item">
+
+                                    <span class="download-icon-ex">{{file.name}}</span>
+                                    <div class="download-icon"></div>
+
+                                </div>
+                            </div>
+
+
+                            <div class="news-detail-additional-btns">
+                                <span ng-hide="MainControllers.NewsDetailCtrl.SelectedNew.isLiked">Если эта новость была Вам полезна, нажмите "Нравится"</span>
+                                <a ng-click="DetailNews.setLike()" class="btn btn-default news-detail-additional-btn">{{MainControllers.NewsDetailCtrl.SelectedNew.isLiked ? 'Больше не нравится' : 'Нравится'}}</a>
+                                <a ng-click="MainControllers.NewsDetailCtrl.goBack()" class="btn btn-default news-detail-additional-btn">Вернуться</a>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div ng-click="MainControllers.NewsDetailCtrl.goBack()" class="prevNewsEx"></div>
+                    <div ng-click="MainControllers.NewsDetailCtrl.goBack()" class="prevNews text-center">
+                        <span style="font-size: 2em; color:gray; margin-top: 42vh" class="fa fa-arrow-left" aria-hidden="true"></span>
+                    </div>
+
+                </div>
+
+
+                <div class="pt-page"
+                     id="EditNewsController"
+                     ng-controller="EditNewsController"
+                     ng-class="MainControllers.EditNewsCtrl.classList.value"
+                     ng-init="EditNew.tagChoose.init(FakeServer.getEditPageData())">
+
+                    <div id="newsEditView" class="edit-news-page">
+
+                        <div class="edit-news-content">
+
+                            <div class="edit-news-header">
+                                <div>
+                                    {{$EditNew.isEdit ? 'Редактирование' : 'Создание'}} новости
+                                </div>
+                                <div>
+                                    <i ng-click="EditNew.close.questionBeforeClose()"
+                                       class="fa fa-times cursor"
+                                       uib-tooltip="Закрыть"
+                                       tooltip-placement="right-top"
+                                       tooltip-append-to-body="true"
+                                       aria-hidden="true"></i>
+                                </div>
+                            </div>
+
+
+                            <div class="edit-news-choose-tag-first">
+                                <div class="col-xs-6 without-padding">
+                                    <h5>Выбор группы</h5>
+                                    <div ng-repeat="group in EditNew.tagChoose.groups track by $index"
+                                         class="edit-news-tags-list">
+                                        <div>
+                                            <span class="ui-toggle toggle-success toggle-xs">
+                                                <input ng-change="EditNew.tagChoose.changeGroup(group)" type="checkbox" ng-model="group.isSelected" style="outline: none;" />
+                                                <span class="ui-toggle__track"></span>
+                                                <span class="ui-toggle__thumb"></span>
+                                            </span>
+                                        </div>
+                                        <div ng-click="EditNew.tagChoose.changeGroup(group, true)"
+                                             class="cursor">
+                                            {{group.groupName}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-show="EditNew.tagChoose.selectedCount(EditNew.tagChoose.groups, false) > 0" class="col-xs-6">
+                                    <h5>Получатели новости</h5>
+                                    <div ng-repeat="pecipient in EditNew.tagChoose.recipients track by $index"
+                                         class="edit-news-tags-list">
+                                        <div>
+                                            <span class="ui-toggle toggle-success toggle-xs">
+                                                <input ng-change="EditNew.tagChoose.changeRecipient(pecipient)" type="checkbox" ng-model="pecipient.isSelected" style="outline: none;" />
+                                                <span class="ui-toggle__track"></span>
+                                                <span class="ui-toggle__thumb"></span>
+                                            </span>
+                                        </div>
+                                        <div ng-click="EditNew.tagChoose.changeRecipient(pecipient, true)"
+                                             class="cursor">
+                                            {{pecipient.tagName}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div ng-show="EditNew.tagChoose.selectedCount(EditNew.tagChoose.groups, false) > 0 && EditNew.tagChoose.selectedCount(EditNew.tagChoose.recipients) > 0"
+                                 class="edit-news-choose-tag-second">
+                                <div class="col-xs-6 without-padding">
+                                    <h5>Категории</h5>
+                                    <div ng-repeat="category in EditNew.tagChoose.categories track by $index"
+                                         ng-hide="category.isEspecial || !EditNew.tagChoose.isParentSelected(category)"
+                                         class="edit-news-tags-list">
+                                        <div>
+                                            <span class="ui-toggle toggle-success toggle-xs">
+                                                <input type="checkbox" ng-model="category.isSelected" style="outline: none;" />
+                                                <span class="ui-toggle__track"></span>
+                                                <span class="ui-toggle__thumb"></span>
+                                            </span>
+                                        </div>
+                                        <div ng-click="category.isSelected = !category.isSelected"
+                                             class="cursor">
+                                            {{category.tagName}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6">
+                                    <h5>Целевая группа</h5>
+                                    <div ng-repeat="group in EditNew.tagChoose.goalGroups track by $index"
+                                         class="edit-news-tags-list">
+                                        <div>
+                                            <span class="ui-toggle toggle-success toggle-xs">
+                                                <input type="checkbox" ng-model="group.isSelected" style="outline: none;" />
+                                                <span class="ui-toggle__track"></span>
+                                                <span class="ui-toggle__thumb"></span>
+                                            </span>
+                                        </div>
+                                        <div ng-click="group.isSelected = !group.isSelected"
+                                             class="cursor">
+                                            {{group.tagName}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div ng-show="EditNew.tagChoose.isMinimumTagsSelected()"
+                                 class="edit-news-image">
+                                <div ng-hide="EditNew.selectNewWithColor.isImportantAndChangeValue()" class="col-xs-12 select-with-color">
+                                    <input class="cursor" ng-model="EditNew.selectNewWithColor.value" type="checkbox" />
+                                    <span ng-click="EditNew.selectNewWithColor.value = !EditNew.selectNewWithColor.value"
+                                          style="padding-left: 7px">Выделить новость цветом</span>
+                                </div>
+
+                                <div style="display: flex; align-items: center;" class="col-xs-12 without-padding">
+                                    <span style="padding-right: 5px">Фоновое изображение:</span>
+                                    <label class="uploadbutton">
+                                        <div class="button">Выбрать</div>
+                                        <div class='input'>{{EditNew.editor.image.name}}</div>
+                                        <input id="newsImageInput" accept="image/png,image/jpeg,image/jpg,image/jpe" type="file" onchange="changeNewBackgroundImage()" />
+                                    </label>
+                                    <i ng-click="EditNew.editor.image.clear()"
+                                       style="cursor: pointer; font-size: 1.3em"
+                                       class="fa fa-times-circle" aria-hidden="true"></i>
+                                </div>
+                            </div>
+
+                            <div ng-show="EditNew.tagChoose.isMinimumTagsSelected()"
+                                 class="edit-news-editor">
+                                <h5>Новость</h5>
+                                <div class="col-xs-12" style="padding: 0 0 10px 0">
+                                    <input style="padding: 0 15px; border-radius: 2px;" maxlength="70" placeholder="Заголовок" class="form-control" ng-model="EditNew.editor.topic" />
+                                </div>
+
+                                <div class="col-xs-12 without-padding">
+
+                                    <summernote id="summernoteId" config="summernoteOptions" ng-model="EditNew.editor.content" ng-change="summernoteChange(contents)"></summernote>
+
+                                </div>
+
+                            </div>
+
+                            <div ng-show="EditNew.tagChoose.isMinimumTagsSelected()"
+                                 class="edit-news-files">
+                                <div style="padding: 10px 15px 10px 15px;" class="col-xs-12">
+                                    <div style="border-bottom: 1px solid gray; display: flex; align-items: center" class="col-xs-12 without-padding">
+                                        <h5 style="padding-right: 10px">Приложения</h5>
+                                        <label class="uploadbutton">
+                                            <div class="button">Выбрать</div>
+                                            <input id="newsFilesInput" type="file" multiple="multiple" accept="*" onchange="changeNewsFiles()" />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items:center; padding: 5px 30px" ng-repeat="file in EditNew.files.items" class="col-xs-12">
+                                    <span ng-click="EditNew.getNewsFile(file.id)" style="padding-right: 5px; cursor: pointer">{{file.name}}</span>
+                                    <i ng-click="EditNew.files.remove(file)"
+                                       style="cursor: pointer; font-size: 1.3em"
+                                       class="fa fa-times-circle" aria-hidden="true"></i>
+                                </div>
+                            </div>
+
+
+                            <div ng-show="EditNew.tagChoose.isMinimumTagsSelected()" class="edit-news-btn-block">
+                                <a ng-click="EditNew.goToNewsDetail()"
+                                   class="btn btn-default edit-news-btn">Предпросмотр</a>
+                                <a ng-click="EditNew.publish.questionBeforePublish()"
+                                   class="btn btn-default edit-news-btn">{{EditNew.isEdit ? 'Сохранить' : 'Опубликовать'}}</a>
+                                <a ng-click="EditNew.close.questionBeforeClose()" class="btn btn-default edit-news-btn">Отмена</a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div ng-show="EditNew.close.isOpen" class="news-delete-dialog">
+                        <div class="delete-dialog-message">
+                            <h4 style="font-size: 16px; text-align: center;">Внимание! Изменения не будут сохранены. <br /> Продолжить?</h4>
+                            <a class="btn delete-news-button" ng-click="EditNew.close.start();">Да</a>
+                            <a class="btn delete-news-button" ng-click="EditNew.close.cancel()">Нет</a>
+                        </div>
+                    </div>
+
+                    <div ng-show="EditNew.publish.isOpen" class="news-delete-dialog">
+                        <div class="delete-dialog-message">
+                            <h4 style="font-size: 16px; text-align: center;">{{EditNew.isEdit ? 'Сохранить изменения?' : 'Опубликовать новость?'}}</h4>
+                            <a class="btn delete-news-button" ng-click="EditNew.publish.start();">Да</a>
+                            <a class="btn delete-news-button" ng-click="EditNew.publish.cancel()">Нет</a>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="pt-page"
+                     id="EmailSettingController"
+                     ng-controller="EmailSettingController"
+                     ng-class="MainControllers.EmailSettingCtrl.classList.value"
+                     ng-init="Setting.init(FakeServer.getEmailSetting())">
+
+
+                    <div class="email-setting-page">
+
+                        <div class="email-setting-content">
+
+                            <div class="col-xs-12 edit-news-header email-setting-header">
+                                <div>
+                                    Настройка получения новостей
+                                    <span ng-show="Setting.saveSettingAlert" class="label label-success save-setting-alert">Сохранено</span>
+                                </div>
+                                <div>
+                                    <i ng-click="Setting.close()"
+                                       class="fa fa-times cursor"
+                                       uib-tooltip="Закрыть"
+                                       tooltip-placement="right-top"
+                                       tooltip-append-to-body="true"
+                                       aria-hidden="true"></i>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 module without-padding email-content">
+
+                                <div class="col-xs-6 without-padding">
+
+                                    <div class="col-xs-12 email-list">
+                                        <div ng-show="Setting.mainEmailExist()" class="col-xs-12 module-padding">
+                                            <div class="col-xs-12 without-padding bottom-border-gray">
+                                                <span class="module_header email-text-header">Основной Email</span>
+                                            </div>
+                                        </div>
+
+
+                                        <div ng-repeat="email in Setting.emails track by $index"
+                                             ng-show="email.isMainEmail"
+                                             ng-click="Setting.activeEmail = email"
+                                             class="col-xs-12 email {{Setting.activeEmail === email ? 'email-active' : ''}}">
+                                            <div style="overflow: hidden;" class="col-xs-12 without-padding">
+                                                <span>{{email.value}}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xs-12 module-padding">
+                                            <div class="col-xs-12 without-padding bottom-border-gray">
+                                                <span class="module_header email-text-header">Дополнительные Email</span>
+                                                <a ng-hide="Setting.hasError()" ng-click="Setting.addEmail()" class="add-email">Добавить</a>
+                                            </div>
+                                        </div>
+
+
+                                        <div ng-repeat="email in Setting.emails track by $index"
+                                             ng-hide="email.isMainEmail"
+                                             ng-click="Setting.activeEmail = email"
+                                             class="col-xs-12 email {{email.error && !Setting.hideAlerts ? 'email-alert' : ''}} {{Setting.activeEmail === email ? 'email-active' : ''}}">
+                                            <i class="fa fa-exclamation-circle email-alert-i" aria-hidden="true"></i>
+                                            <div style="overflow: hidden;" class="col-xs-12 without-padding">
+                                                <span>{{email.value != undefined && email.value != '' ? email.value : 'Введите Email'}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-xs-12 email-footer">
+                                        <div col-xs-12 email-footer-btn">
+                                            <a ng-click="Setting.save()" class="btn btn-default email-btn {{Setting.isChanged() ? '' : 'email-btn-lock'}}">Сохранить</a>
+                                            <a ng-click="Setting.cancel()" class="btn btn-default email-btn  {{Setting.isChanged() ? '' : 'email-btn-lock'}}">Отмена</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <div ng-show="Setting.activeEmail != null" class="col-xs-6 email-edit-area without-padding">
+
+                                    <div ng-hide="Setting.activeEmail.isMainEmail" class="col-xs-12 module-padding">
+                                        <div class="col-xs-12 without-padding bottom-border-gray">
+                                            <span class="module_header email-text-header">Редактировать Email</span>
+                                        </div>
+                                    </div>
+
+                                    <div ng-hide="Setting.activeEmail.isMainEmail" style="padding: 7px 0 5px 15px" class="col-xs-12">
+
+                                        <div style="width: 88%">
+                                            <input ng-model="Setting.activeEmail.value"
+                                                   ng-change="Setting.checkEmail(Setting.activeEmail)"
+                                                   placeholder="example@mail.ru" class="form-control email-input" />
+                                            <span ng-show="Setting.activeEmail.error && !Setting.hideAlerts" class="label label-danger email-error-label">Введите корректный Email</span>
+                                        </div>
+
+                                        <a ng-click="Setting.deleteEmail()"
+                                           class="trash-style"
+                                           uib-tooltip="Удалить Email из рассылки" tooltip-append-to-body="true">
+                                            <span class="fa fa-trash" aria-hidden="true"></span>
+                                        </a>
+
+                                    </div>
+
+                                    <div class="col-xs-12 without-padding">
+
+
+                                        <div class="col-xs-12 module-padding">
+                                            <div class="col-xs-12 without-padding bottom-border-gray">
+                                                <span class="module_header email-text-header">Получать новости по следующим категориям</span>
+                                            </div>
+                                        </div>
+
+
+                                        <div ng-repeat="tag in Setting.availableCategories track by $index" ng-click="Setting.toogleCategory(tag.TagId)" class="module-padding cursor item-email">
+                                            <div class="item-check {{Setting.isCategorySelected(tag.TagId) ? 'item-check-selected' : 'item-check-not-selected'}}"></div>
+                                            <div class="col-xs-12 item-padding {{tag !== Setting.availableCategories[Setting.availableCategories.length - 1] ? 'bottom-border-light' : ''}}">
+                                                <div style="overflow: hidden;" class="col-xs-12 without-padding">
+                                                    <span>{{tag.TagName}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                <div ng-show="Setting.activeEmail == null" class="col-xs-6 email-edit-area email-not-select">
+                                    <span class="module_header">Email не выбран</span>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+             
+                    <div style="width: calc(50% - 380px)" ng-click="Setting.close()" class="prevNewsEx"></div>
+                    <div ng-click="Setting.close()" class="prevNews text-center">
+                        <span style="font-size: 2em; color:gray; margin-top: 42vh" class="fa fa-arrow-left" aria-hidden="true"></span>
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
